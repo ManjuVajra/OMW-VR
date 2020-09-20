@@ -15,6 +15,7 @@
 #include <osg/ComputeBoundsVisitor>
 #include <osg/ShapeDrawable>
 #include <osg/TextureCubeMap>
+#include <osg/ViewportIndexed>
 
 #include <osgUtil/LineSegmentIntersector>
 
@@ -214,8 +215,9 @@ namespace MWRender
         resourceSystem->getSceneManager()->setParticleSystemMask(MWRender::Mask_ParticleSystem);
         resourceSystem->getSceneManager()->setShaderPath(resourcePath + "/shaders");
         // Shadows and radial fog have problems with fixed-function mode
-        bool forceShaders = Settings::Manager::getBool("radial fog", "Shaders") || Settings::Manager::getBool("force shaders", "Shaders") || Settings::Manager::getBool("enable shadows", "Shadows");
-        resourceSystem->getSceneManager()->setForceShaders(forceShaders);
+        //bool forceShaders = Settings::Manager::getBool("radial fog", "Shaders") || Settings::Manager::getBool("force shaders", "Shaders") || Settings::Manager::getBool("enable shadows", "Shadows");
+        //resourceSystem->getSceneManager()->setForceShaders(forceShaders);
+        resourceSystem->getSceneManager()->setForceShaders(true);
         // FIXME: calling dummy method because terrain needs to know whether lighting is clamped
         resourceSystem->getSceneManager()->setClampLighting(Settings::Manager::getBool("clamp lighting", "Shaders"));
         resourceSystem->getSceneManager()->setAutoUseNormalMaps(Settings::Manager::getBool("auto use object normal maps", "Shaders"));
@@ -377,11 +379,14 @@ namespace MWRender
         mFirstPersonFieldOfView = std::min(std::max(1.f, firstPersonFov), 179.f);
         mStateUpdater->setFogEnd(mViewDistance);
 
+        ////// Near far uniforms
         mRootNode->getOrCreateStateSet()->addUniform(new osg::Uniform("near", mNearClip));
         mRootNode->getOrCreateStateSet()->addUniform(new osg::Uniform("far", mViewDistance));
+        mRootNode->getOrCreateStateSet()->addUniform(new osg::Uniform("simpleWater", false));
 
         mUniformNear = mRootNode->getOrCreateStateSet()->getUniform("near");
         mUniformFar = mRootNode->getOrCreateStateSet()->getUniform("far");
+
         updateProjectionMatrix();
     }
 
@@ -1358,82 +1363,6 @@ namespace MWRender
     float RenderingManager::getTerrainHeightAt(const osg::Vec3f &pos)
     {
         return mTerrain->getHeightAt(pos);
-    }
-
-    bool RenderingManager::vanityRotateCamera(const float *rot)
-    {
-        if(!mCamera->isVanityOrPreviewModeEnabled())
-            return false;
-
-        mCamera->rotateCamera(rot[0], 0.f, rot[2], true);
-        return true;
-    }
-
-    void RenderingManager::setCameraDistance(float dist, bool adjust, bool override)
-    {
-        if(!mCamera->isVanityOrPreviewModeEnabled() && !mCamera->isFirstPerson())
-        {
-            if(mCamera->isNearest() && dist > 0.f)
-                mCamera->toggleViewMode();
-            else if (override)
-                mCamera->updateBaseCameraDistance(-dist / 120.f * 10, adjust);
-            else
-                mCamera->setCameraDistance(-dist / 120.f * 10, adjust);
-        }
-        else if(mCamera->isFirstPerson() && dist < 0.f)
-        {
-            mCamera->toggleViewMode();
-            if (override)
-                mCamera->updateBaseCameraDistance(0.f, false);
-            else
-                mCamera->setCameraDistance(0.f, false);
-        }
-    }
-
-    void RenderingManager::resetCamera()
-    {
-        mCamera->reset();
-    }
-
-    float RenderingManager::getCameraDistance() const
-    {
-        return mCamera->getCameraDistance();
-    }
-
-    Camera* RenderingManager::getCamera()
-    {
-        return mCamera.get();
-    }
-
-    const osg::Vec3f &RenderingManager::getCameraPosition() const
-    {
-        return mCurrentCameraPos;
-    }
-
-    void RenderingManager::togglePOV(bool force)
-    {
-        mCamera->toggleViewMode(force);
-    }
-
-    void RenderingManager::togglePreviewMode(bool enable)
-    {
-        mCamera->togglePreviewMode(enable);
-    }
-
-    bool RenderingManager::toggleVanityMode(bool enable)
-    {
-        return mCamera->toggleVanityMode(enable);
-    }
-
-    void RenderingManager::allowVanityMode(bool allow)
-    {
-        mCamera->allowVanityMode(allow);
-    }
-
-    void RenderingManager::changeVanityModeScale(float factor)
-    {
-        if(mCamera->isVanityOrPreviewModeEnabled())
-            mCamera->updateBaseCameraDistance(-factor/120.f*10, true);
     }
 
     void RenderingManager::overrideFieldOfView(float val)

@@ -59,7 +59,7 @@ add_component_dir (nif
     )
 
 add_component_dir (nifosg
-    nifloader controller particle userdata
+    nifloader controller particle matrixtransform
     )
 
 add_component_dir (nifbullet
@@ -86,7 +86,7 @@ add_component_dir (esmterrain
     )
 
 add_component_dir (misc
-    gcd constants utf8stream stringops resourcehelpers rng messageformatparser weakcache
+    gcd constants utf8stream stringops resourcehelpers rng messageformatparser weakcache stereo
     )
 
 add_component_dir (debug
