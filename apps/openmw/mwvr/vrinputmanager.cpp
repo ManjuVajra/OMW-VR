@@ -195,61 +195,92 @@ namespace MWVR
         , mXRInput(new OpenXRInput)
         , mHapticsEnabled{Settings::Manager::getBool("haptics enabled", "VR")}
     {
-        std::string oculusTouchProfilePath = "/interaction_profiles/oculus/touch_controller";
-        // Set up default bindings for the oculus
-
-        /*
-            Oculus Bindings:
-            L-Squeeze:
-                Hold: Sneak
-
-            R-Squeeze:
-                Hold: Enable Pointer
-
-            L-Trigger:
-                Press: Jump
-
-            R-Trigger:
-                IF POINTER:
-                    Activate
-                ELSE:
-                    Use
-
-            L-Thumbstick:
-                X-Axis: MoveForwardBackward
-                Y-Axis: MoveLeftRight
-                Button:
-                    Press: AlwaysRun
-                    Long: ToggleHUD
-                Touch:
-
-            R-Thumbstick:
-                X-Axis: LookLeftRight
-                Y-Axis:
-                Button:
-                    Press: AutoMove
-                    Long: ToggleDebug
-                Touch:
-
-            X:
-                Press: Toggle Spell
-                Long:
-            Y:
-                Press: Rest
-                Long: Quick Save
-            A:
-                Press: Toggle Weapon
-                Long:
-            B:
-                Press: Inventory
-                Long: Journal
-
-            Menu:
-                Press: GameMenu
-                Long: Recenter on player and reset GUI
-
-        */
         {
+            std::string simpleProfilePath = "/interaction_profiles/khr/simple_controller";
+            // Set up default bindings for the khronos simple controller.
+            // Note: The simple controller is the equivalent to a universal "default".
+            // It has highly reduced functionality. Only poses and two click actions
+            // are available for each hand, reducing the possible functionality of the profile
+            // to that of a wonky preview.
+            // The available click actions are 'select' and 'menu', and i cannot control what
+            // real buttons this is mapped to. On the Oculus Touch they are X, Y, A, and B.
+
+            // In-game character controls
+            SuggestedBindings simpleGameplayBindings{
+                    {MWInput::A_Use, ActionPath::Select, Side::LEFT_SIDE}, // Touch: X
+                    {MWInput::A_GameMenu, ActionPath::Menu, Side::LEFT_SIDE}, // Touch: Y
+                    {A_Recenter, ActionPath::Menu, Side::LEFT_SIDE}, // Touch: Y
+                    {A_ActivateTouch, ActionPath::Select, Side::RIGHT_SIDE}, // Touch: A
+                    {MWInput::A_Inventory, ActionPath::Menu, Side::RIGHT_SIDE}, // Touch: B
+            };
+
+            // GUI controls
+            SuggestedBindings simpleGUIBindings{
+                    {MWInput::A_Use, ActionPath::Select, Side::LEFT_SIDE}, // Touch: X
+                    {MWInput::A_GameMenu, ActionPath::Menu, Side::LEFT_SIDE}, // Touch: Y
+                    {A_Recenter, ActionPath::Menu, Side::LEFT_SIDE}, // Touch: Y
+                    {A_MenuSelect, ActionPath::Select, Side::RIGHT_SIDE}, // Touch: A
+                    {A_MenuBack, ActionPath::Menu, Side::RIGHT_SIDE}, // Touch: B
+            };
+            mXRInput->suggestBindings(ActionSet::Gameplay, simpleProfilePath, simpleGameplayBindings);
+            mXRInput->suggestBindings(ActionSet::GUI, simpleProfilePath, simpleGUIBindings);
+        }
+
+        {
+            std::string oculusTouchProfilePath = "/interaction_profiles/oculus/touch_controller";
+            // Set up default bindings for the oculus
+
+            /*
+                Oculus Bindings:
+                L-Squeeze:
+                    Hold: Sneak
+
+                R-Squeeze:
+                    Hold: Enable Pointer
+
+                L-Trigger:
+                    Press: Jump
+
+                R-Trigger:
+                    IF POINTER:
+                        Activate
+                    ELSE:
+                        Use
+
+                L-Thumbstick:
+                    X-Axis: MoveForwardBackward
+                    Y-Axis: MoveLeftRight
+                    Button:
+                        Press: AlwaysRun
+                        Long: ToggleHUD
+                    Touch:
+
+                R-Thumbstick:
+                    X-Axis: LookLeftRight
+                    Y-Axis:
+                    Button:
+                        Press: AutoMove
+                        Long: ToggleDebug
+                    Touch:
+
+                X:
+                    Press: Toggle Spell
+                    Long:
+                Y:
+                    Press: Rest
+                    Long: Quick Save
+                A:
+                    Press: Toggle Weapon
+                    Long:
+                B:
+                    Press: Inventory
+                    Long: Journal
+
+                Menu:
+                    Press: GameMenu
+                    Long: Recenter on player and reset GUI
+
+            */
             // In-game character controls
             SuggestedBindings oculusTouchGameplayBindings{
                     {MWInput::A_LookLeftRight, ActionPath::ThumbstickX, Side::RIGHT_SIDE},
@@ -278,8 +309,6 @@ namespace MWVR
                     {A_ActivateTouch, ActionPath::Squeeze, Side::RIGHT_SIDE},
             };
 
-            mXRInput->suggestBindings(ActionSet::Gameplay, oculusTouchProfilePath, oculusTouchGameplayBindings);
-
             // GUI controls
             SuggestedBindings oculusTouchGUIBindings{
                     {A_MenuUpDown, ActionPath::ThumbstickY, Side::RIGHT_SIDE},
@@ -291,6 +320,7 @@ namespace MWVR
                     {A_Recenter, ActionPath::Menu, Side::LEFT_SIDE},
             };
 
+            mXRInput->suggestBindings(ActionSet::Gameplay, oculusTouchProfilePath, oculusTouchGameplayBindings);
             mXRInput->suggestBindings(ActionSet::GUI, oculusTouchProfilePath, oculusTouchGUIBindings);
         }
 
