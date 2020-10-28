@@ -377,7 +377,15 @@ namespace MWVR
     {
         std::string controllerProfilePath = "/interaction_profiles/htc/vive_controller";
 
-        // TODO: I Didn't realize the vive wands were so bad. We don't have NEARLY enough actions available.
+        std::string menuPath = "/user/hand/left/input/menu/click";
+        // Logic via excetions is basically a mortal sin
+        // but idc for a temp test build.
+        try {
+            menuPath = Settings::Manager::getString("Vive Controller Menu Path Override", "VR Debug");
+            Log(Debug::Verbose) << "Overriding vive menu path, new path: " << menuPath;
+        }
+        catch (...) {
+        }
 
         // In-game character controls
         SuggestedBindings gameplayBindings{
@@ -389,8 +397,8 @@ namespace MWVR
             //{MWInput::A_Rest,               "/user/hand/left/input/b/click"},
             //{MWInput::A_ToggleDebug,        "/user/hand/right/input/thumbstick/click"},
             //{MWInput::A_ToggleHUD,          "/user/hand/left/input/thumbstick/click"},
-            {A_Recenter,                    "/user/hand/left/input/menu/click"},
-            {A_VrMetaMenu,                  "/user/hand/left/input/menu/click"},
+            {A_Recenter,                    menuPath.c_str()},
+            {A_VrMetaMenu,                  menuPath.c_str()},
             {MWInput::A_MoveForwardBackward,"/user/hand/left/input/trackpad/y"},
             {MWInput::A_MoveLeftRight,      "/user/hand/left/input/trackpad/x"},
             {MWInput::A_ToggleSpell,        "/user/hand/left/input/trackpad/click"},
