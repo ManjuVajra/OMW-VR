@@ -389,7 +389,7 @@ namespace MWVR
             //{MWInput::A_Rest,               "/user/hand/left/input/b/click"},
             //{MWInput::A_ToggleDebug,        "/user/hand/right/input/thumbstick/click"},
             //{MWInput::A_ToggleHUD,          "/user/hand/left/input/thumbstick/click"},
-            {A_Recenter,                    "/user/hand/left/input/menu/click"},
+            {A_Recenter,                    "/user/hand/right/input/menu/click"},
             {A_VrMetaMenu,                  "/user/hand/left/input/menu/click"},
             {MWInput::A_MoveForwardBackward,"/user/hand/left/input/trackpad/y"},
             {MWInput::A_MoveLeftRight,      "/user/hand/left/input/trackpad/x"},
