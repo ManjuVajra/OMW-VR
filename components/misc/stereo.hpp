@@ -100,6 +100,8 @@ namespace Misc
         //! Callback that updates stereo configuration during the update pass
         void setUpdateViewCallback(std::shared_ptr<UpdateViewCallback> cb);
 
+        void useSlaveCamera(unsigned int index);
+
     private:
         void setupBruteForceTechnique();
         void setupGeometryShaderIndexedViewportTechnique();

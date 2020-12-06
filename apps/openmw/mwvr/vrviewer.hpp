@@ -14,6 +14,8 @@
 
 #include <components/sceneutil/positionattitudetransform.hpp>
 
+#include <components/misc/stereo.hpp>
+
 namespace MWVR
 {
     class VRFramebuffer;
@@ -73,33 +75,32 @@ namespace MWVR
 
         ~VRViewer(void);
 
-        void traversals();
         void preDrawCallback(osg::RenderInfo& info);
         void postDrawCallback(osg::RenderInfo& info);
         void blitEyesToMirrorTexture(osg::GraphicsContext* gc);
         void realize(osg::GraphicsContext* gc);
         bool realized() { return mConfigured; }
-        VRView* getView(std::string name);
-        VrShadow& vrShadow() { return mVrShadow; }
+        void swapBuffers(osg::GraphicsContext* gc);
+        std::array<CompositionLayerProjectionView, 2>
+            layerStack() { return mLayerStack; }
 
-        void enableMainCamera(void);
-        void disableMainCamera(void);
+        void setStereoView(Misc::StereoView* stereoView);
 
     private:
         osg::ref_ptr<osgViewer::Viewer> mViewer = nullptr;
-        std::map<std::string, osg::ref_ptr<VRView> > mViews{};
-        std::map<std::string, osg::ref_ptr<osg::Camera> > mCameras{};
+        osg::ref_ptr<Misc::StereoView> mStereoView = nullptr;
         osg::ref_ptr<PredrawCallback> mPreDraw{ nullptr };
         osg::ref_ptr<PostdrawCallback> mPostDraw{ nullptr };
+        osg::ref_ptr<osg::Camera> mMainCamera{ nullptr };
+        osg::ref_ptr<osg::Camera> mStereoSlave{ nullptr };
         osg::GraphicsContext* mMainCameraGC{ nullptr };
-        std::unique_ptr<VRFramebuffer> mMsaaResolveMirrorTexture[2]{ };
+        std::unique_ptr<OpenXRSwapchain> mSwapchain{ nullptr };
+        std::unique_ptr<VRFramebuffer> mMsaaResolveMirrorTexture{};
         std::unique_ptr<VRFramebuffer> mMirrorTexture{ nullptr };
-        VrShadow    mVrShadow;
-
+        std::array<CompositionLayerProjectionView, 2> mLayerStack{};
         std::mutex mMutex{};
-
         bool mConfigured{ false };
-        std::vector<std::string> mMirrorTextureViews;
+        bool mUseSlave{ true };
     };
 }
 

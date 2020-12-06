@@ -22,4 +22,6 @@ void OMW::Engine::initVr()
     mXrEnvironment.setUnitsPerMeter(unitsPerMeter);
     mXrEnvironment.setSession(new MWVR::VRSession());
     mXrEnvironment.setViewer(new MWVR::VRViewer(mViewer));
+
+    mStereoOverride = true;
 }

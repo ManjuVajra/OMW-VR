@@ -452,7 +452,6 @@ namespace Misc
 
         // Update stereo uniforms
         auto frustumViewMatrixInverse = osg::Matrix::inverse(mMainCamera->getViewMatrix());
-        //auto frustumViewProjectionMatrixInverse = osg::Matrix::inverse(mMainCamera->getProjectionMatrix()) * osg::Matrix::inverse(mMainCamera->getViewMatrix());
         auto* stereoViewMatrixUniform = stateset->getUniform("stereoViewMatrices");
         auto* stereoViewProjectionsUniform = stateset->getUniform("stereoViewProjections");
 
@@ -465,6 +464,11 @@ namespace Misc
     void StereoView::setUpdateViewCallback(std::shared_ptr<UpdateViewCallback> cb)
     {
         this->cb = cb;
+    }
+
+    void StereoView::useSlaveCamera(unsigned int index)
+    {
+        mMainCamera = mViewer->getSlave(index)._camera;
     }
 
     void disableStereoForCamera(osg::Camera* camera)

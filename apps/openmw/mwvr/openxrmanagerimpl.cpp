@@ -397,7 +397,11 @@ namespace MWVR
     {
         XrCompositionLayerProjectionView xrLayer;
         xrLayer.type = XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW;
-        xrLayer.subImage = layer.swapchain->impl().xrSubImage();
+        xrLayer.subImage.swapchain = layer.subImage.swapchain->impl().xrSwapchain();
+        xrLayer.subImage.imageRect.offset.x = layer.subImage.x;
+        xrLayer.subImage.imageRect.offset.y = layer.subImage.y;
+        xrLayer.subImage.imageRect.extent.width = layer.subImage.w;
+        xrLayer.subImage.imageRect.extent.height = layer.subImage.h;
         xrLayer.pose = toXR(layer.pose);
         xrLayer.fov = toXR(layer.fov);
         xrLayer.next = nullptr;
@@ -430,8 +434,10 @@ namespace MWVR
             // All values not set here are set previously as they are constant
             compositionLayerDepth[(int)Side::LEFT_SIDE].farZ = farClip;
             compositionLayerDepth[(int)Side::RIGHT_SIDE].farZ = farClip;
-            compositionLayerDepth[(int)Side::LEFT_SIDE].subImage = layerStack[(int)Side::LEFT_SIDE].swapchain->impl().xrSubImageDepth();
-            compositionLayerDepth[(int)Side::RIGHT_SIDE].subImage = layerStack[(int)Side::RIGHT_SIDE].swapchain->impl().xrSubImageDepth();
+            compositionLayerDepth[(int)Side::LEFT_SIDE].subImage = compositionLayerProjectionViews[(int)Side::LEFT_SIDE].subImage;
+            compositionLayerDepth[(int)Side::LEFT_SIDE].subImage.swapchain = layerStack[(int)Side::LEFT_SIDE].subImage.swapchain->impl().xrSwapchainDepth();
+            compositionLayerDepth[(int)Side::RIGHT_SIDE].subImage = compositionLayerProjectionViews[(int)Side::RIGHT_SIDE].subImage;
+            compositionLayerDepth[(int)Side::RIGHT_SIDE].subImage.swapchain = layerStack[(int)Side::RIGHT_SIDE].subImage.swapchain->impl().xrSwapchainDepth();
             if (compositionLayerDepth[(int)Side::LEFT_SIDE].subImage.swapchain != XR_NULL_HANDLE
                 && compositionLayerDepth[(int)Side::RIGHT_SIDE].subImage.swapchain != XR_NULL_HANDLE)
             {

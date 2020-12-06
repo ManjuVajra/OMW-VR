@@ -11,7 +11,7 @@
 namespace MWVR
 {
 
-    VRFramebuffer::VRFramebuffer(osg::ref_ptr<osg::State> state, std::size_t width, std::size_t height, uint32_t msaaSamples, uint32_t colorBuffer, uint32_t depthBuffer)
+    VRFramebuffer::VRFramebuffer(osg::ref_ptr<osg::State> state, std::size_t width, std::size_t height, uint32_t msaaSamples, uint32_t colorBuffer, uint32_t depthBuffer, uint32_t colorFormat, uint32_t depthFormat)
         : mState(state)
         , mWidth(width)
         , mHeight(height)
@@ -36,9 +36,9 @@ namespace MWVR
             glGenTextures(1, &mColorBuffer);
             glBindTexture(mTextureTarget, mColorBuffer);
             if (mSamples <= 1)
-                glTexImage2D(mTextureTarget, 0, GL_RGBA, mWidth, mHeight, 0, GL_RGBA, GL_UNSIGNED_INT, nullptr);
+                glTexImage2D(mTextureTarget, 0, colorFormat, mWidth, mHeight, 0, GL_RGBA, GL_UNSIGNED_INT, nullptr);
             else
-                gl->glTexImage2DMultisample(mTextureTarget, mSamples, GL_RGBA, mWidth, mHeight, false);
+                gl->glTexImage2DMultisample(mTextureTarget, mSamples, colorFormat, mWidth, mHeight, false);
             glTexParameteri(mTextureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER_ARB);
             glTexParameteri(mTextureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER_ARB);
             glTexParameteri(mTextureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -51,23 +51,26 @@ namespace MWVR
             glGenTextures(1, &mDepthBuffer);
             glBindTexture(mTextureTarget, mDepthBuffer);
             if (mSamples <= 1)
-                glTexImage2D(mTextureTarget, 0, GL_DEPTH_COMPONENT24, mWidth, mHeight, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
+                glTexImage2D(mTextureTarget, 0, depthFormat, mWidth, mHeight, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
             else
-                gl->glTexImage2DMultisample(mTextureTarget, mSamples, GL_DEPTH_COMPONENT, mWidth, mHeight, false);
+                gl->glTexImage2DMultisample(mTextureTarget, mSamples, depthFormat, mWidth, mHeight, false);
             glTexParameteri(mTextureTarget, GL_TEXTURE_WRAP_S, GL_REPEAT);
             glTexParameteri(mTextureTarget, GL_TEXTURE_WRAP_T, GL_REPEAT);
             glTexParameteri(mTextureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
             glTexParameteri(mTextureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri(mTextureTarget, GL_TEXTURE_MAX_LEVEL, 0);
-        }
 
+            //gl->glGenRenderbuffers(1, &mDepthBuffer);
+            //gl->glBindRenderbuffer(GL_RENDERBUFFER_EXT, mDepthBuffer);
+            //gl->glRenderbufferStorageMultisample(GL_RENDERBUFFER_EXT, mSamples, GL_DEPTH_COMPONENT, mWidth, mHeight);
+        }
 
         gl->glBindFramebuffer(GL_FRAMEBUFFER_EXT, mFBO);
         gl->glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, mTextureTarget, mColorBuffer, 0);
         gl->glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, mTextureTarget, mDepthBuffer, 0);
+        //gl->glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, mDepthBuffer);
         if (gl->glCheckFramebufferStatus(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT)
             throw std::runtime_error("Failed to create OpenXR framebuffer");
-
 
         gl->glBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
     }
@@ -110,12 +113,12 @@ namespace MWVR
         gl->glBindFramebuffer(target, mFBO);
     }
 
-    void VRFramebuffer::blit(osg::GraphicsContext* gc, int x, int y, int w, int h)
+    void VRFramebuffer::blit(osg::GraphicsContext* gc, int x, int y, int w, int h, uint32_t bufferBitfield, uint32_t filtering)
     {
         auto* state = gc->getState();
         auto* gl = osg::GLExtensions::Get(state->getContextID(), false);
         gl->glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, mFBO);
-        gl->glBlitFramebuffer(0, 0, mWidth, mHeight, x, y, w, h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+        gl->glBlitFramebuffer(0, 0, mWidth, mHeight, x, y, w, h, bufferBitfield, filtering);
         gl->glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, 0);
     }
 }

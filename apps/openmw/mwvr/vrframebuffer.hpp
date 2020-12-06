@@ -12,11 +12,11 @@ namespace MWVR
 {
     /// \brief Manages an opengl framebuffer
     ///
-    /// Intended for managing the vr swapchain, but is also use to manage the mirror texture as a convenience.
+    /// Intended for managing the vr swapchain
     class VRFramebuffer : public osg::Referenced
     {
     public:
-        VRFramebuffer(osg::ref_ptr<osg::State> state, std::size_t width, std::size_t height, uint32_t msaaSamples, uint32_t colorBuffer = 0, uint32_t depthBuffer = 0);
+        VRFramebuffer(osg::ref_ptr<osg::State> state, std::size_t width, std::size_t height, uint32_t msaaSamples, uint32_t colorBuffer = 0, uint32_t depthBuffer = 0, uint32_t colorFormat = GL_RGBA, uint32_t depthFormat = GL_DEPTH_COMPONENT24);
         ~VRFramebuffer();
 
         void destroy(osg::State* state);
@@ -31,7 +31,7 @@ namespace MWVR
         uint32_t colorBuffer(void) const { return mColorBuffer; }
 
         //! Blit to region in currently bound draw fbo
-        void blit(osg::GraphicsContext* gc, int x, int y, int w, int h);
+        void blit(osg::GraphicsContext* gc, int x, int y, int w, int h, uint32_t bufferBitfield = GL_COLOR_BUFFER_BIT, uint32_t filtering = GL_LINEAR);
 
     private:
         // Set aside a weak pointer to the constructor state to use when freeing FBOs, if no state is given to destroy()

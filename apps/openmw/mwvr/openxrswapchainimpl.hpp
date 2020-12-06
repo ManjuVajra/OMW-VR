@@ -40,6 +40,12 @@ namespace MWVR
         void checkAcquired() const;
 
     private:
+        void beginFrameXr(osg::GraphicsContext* gc);
+        void endFrameXr(osg::GraphicsContext* gc);
+        void beginFrameGl(osg::GraphicsContext* gc);
+        void endFrameGl(osg::GraphicsContext* gc);
+
+    private:
         XrSwapchain mSwapchain = XR_NULL_HANDLE;
         XrSwapchain mSwapchainDepth = XR_NULL_HANDLE;
         std::vector<XrSwapchainImageOpenGLKHR> mSwapchainColorBuffers{};
@@ -52,9 +58,9 @@ namespace MWVR
         int64_t mSwapchainColorFormat = -1;
         int64_t mSwapchainDepthFormat = -1;
         bool mHaveDepthSwapchain = false;
-        uint32_t mFBO = 0;
-        std::vector<std::unique_ptr<VRFramebuffer> > mRenderBuffers{};
-        int mRenderBuffer{ 0 };
+        bool mRenderToXrSwapchain = true;
+        std::vector<std::unique_ptr<VRFramebuffer> > mRenderBuffersGl{};
+        std::vector<std::unique_ptr<VRFramebuffer> > mRenderBuffersXr{};
         uint32_t mAcquiredImageIndex{ 0 };
         bool mIsAcquired{ false };
     };

@@ -127,23 +127,11 @@ namespace MWVR
     void VRSession::swapBuffers(osg::GraphicsContext* gc, VRViewer& viewer)
     {
         auto* xr = Environment::get().getManager();
-
-        beginPhase(FramePhase::Swap);
-
         auto* frameMeta = getFrame(FramePhase::Swap).get();
-        auto leftView = viewer.getView("LeftEye");
-        auto rightView = viewer.getView("RightEye");
-
         if (frameMeta->mShouldRender)
         {
-            viewer.blitEyesToMirrorTexture(gc);
-            gc->swapBuffersImplementation();
-            leftView->swapBuffers(gc);
-            rightView->swapBuffers(gc);
-
-            std::array<CompositionLayerProjectionView, 2> layerStack{};
-            layerStack[(int)Side::LEFT_SIDE].swapchain = &leftView->swapchain();
-            layerStack[(int)Side::RIGHT_SIDE].swapchain = &rightView->swapchain();
+            auto begin = std::chrono::steady_clock::now();
+            std::array<CompositionLayerProjectionView, 2> layerStack = viewer.layerStack();
             layerStack[(int)Side::LEFT_SIDE].pose = frameMeta->mPredictedPoses.eye[(int)Side::LEFT_SIDE] / mPlayerScale;
             layerStack[(int)Side::RIGHT_SIDE].pose = frameMeta->mPredictedPoses.eye[(int)Side::RIGHT_SIDE] / mPlayerScale;
             layerStack[(int)Side::LEFT_SIDE].fov = frameMeta->mPredictedPoses.view[(int)Side::LEFT_SIDE].fov;
@@ -151,11 +139,14 @@ namespace MWVR
 
             xr->endFrame(frameMeta->mFrameInfo, 1, layerStack);
             xr->xrResourceReleased();
+            auto elapsed = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(std::chrono::steady_clock::now() - begin);
+            Log(Debug::Verbose) << "swapBuffersFrame(): " << elapsed.count() << "ms";
         }
 
         {
             std::unique_lock<std::mutex> lock(mMutex);
             mLastRenderedFrame = frameMeta->mFrameNo;
+            Log(Debug::Verbose) << "Caught up to " << mLastRenderedFrame;
             getFrame(FramePhase::Swap) = nullptr;
         }
         mCondition.notify_one();
@@ -190,11 +181,13 @@ namespace MWVR
 
         if (phase == mXrSyncPhase && frame->mShouldRender)
         {
+            auto begin = std::chrono::steady_clock::now();
             // We may reach this point before xrEndFrame of the previous frame
             // Must wait or openxr will interpret another call to xrBeginFrame() as skipping a frame
             std::unique_lock<std::mutex> lock(mMutex);
-            while (mLastRenderedFrame != mFrames - 1)
+            while (mLastRenderedFrame != frame->mFrameNo-1)
             {
+                Log(Debug::Verbose) << "Waiting for render to catch up to " << (frame->mFrameNo - 1);
                 mCondition.wait(lock);
             }
 
@@ -202,6 +195,8 @@ namespace MWVR
             {
                 Environment::get().getManager()->beginFrame();
             }
+            auto elapsed = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(std::chrono::steady_clock::now() - begin);
+            Log(Debug::Verbose) << "beginFrame(): " << elapsed.count() << "ms";
         }
     }
 
@@ -225,7 +220,11 @@ namespace MWVR
         frame->mShouldRender = xr->xrSessionCanRender();
         if (frame->mShouldRender)
         {
+            auto begin = std::chrono::steady_clock::now();
             frame->mFrameInfo = xr->waitFrame();
+            auto elapsed = std::chrono::duration_cast<std::chrono::duration<double, std::milli> >(std::chrono::steady_clock::now() - begin);
+            Log(Debug::Verbose) << "waitFrame(): " << elapsed.count() << "ms";
+            
             xr->xrResourceAcquired();
         }
         frame->mPredictedDisplayTime = frame->mFrameInfo.runtimePredictedDisplayTime;

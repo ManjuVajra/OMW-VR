@@ -710,7 +710,7 @@ void OMW::Engine::prepareEngine (Settings::Manager & settings)
 
 
 #ifdef USE_OPENXR
-    mXrEnvironment.setGUIManager(new MWVR::VRGUIManager(mViewer));
+    mXrEnvironment.setGUIManager(new MWVR::VRGUIManager(mViewer, mResourceSystem.get()));
     //mViewer->setThreadingModel(osgViewer::ViewerBase::SingleThreaded);
 #endif
 
@@ -744,7 +744,10 @@ void OMW::Engine::prepareEngine (Settings::Manager & settings)
         // Remove that altogether when the sky finally uses them.
         auto noShaderMask = MWRender::VisMask::Mask_Sky | MWRender::VisMask::Mask_Sun | MWRender::VisMask::Mask_WeatherParticles;
         auto geometryShaderMask = mViewer->getCamera()->getCullMask() & ~noShaderMask;
-        mStereoView.reset(new Misc::StereoView(mViewer, Misc::getStereoTechnique(), geometryShaderMask, noShaderMask | MWRender::VisMask::Mask_Scene));
+        mStereoView = new Misc::StereoView(mViewer, Misc::getStereoTechnique(), geometryShaderMask, noShaderMask | MWRender::VisMask::Mask_Scene);
+#ifdef USE_OPENXR
+        mXrEnvironment.getViewer()->setStereoView(mStereoView);
+#endif
     }
 
     window->setStore(mEnvironment.getWorld()->getStore());

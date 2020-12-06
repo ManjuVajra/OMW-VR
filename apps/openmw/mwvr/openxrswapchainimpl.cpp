@@ -24,6 +24,8 @@ namespace MWVR {
         if (mSamples <= 0)
             throw std::invalid_argument("Samples must be a positive integer");
 
+        mRenderToXrSwapchain = Settings::Manager::getBool("render to openxr swapchain", "VR");
+
         auto* xr = Environment::get().getManager();
 
         // Select a swapchain format.
@@ -37,14 +39,13 @@ namespace MWVR {
             GL_RGBA8,
             GL_RGBA8_SNORM,
             GL_SRGB8_ALPHA8,
-            //GL_RGBA16,
-            //0x881A // GL_RGBA16F
         };
 
         auto swapchainFormatIt =
             std::find_first_of(swapchainFormats.begin(), swapchainFormats.end(), std::begin(RequestedColorSwapchainFormats),
                 std::end(RequestedColorSwapchainFormats));
-        if (swapchainFormatIt == swapchainFormats.end()) {
+        if (swapchainFormatIt == swapchainFormats.end()) 
+        {
             throw std::runtime_error("Swapchain color format not supported");
         }
         mSwapchainColorFormat = *swapchainFormatIt;
@@ -85,7 +86,10 @@ namespace MWVR {
             Log(Debug::Verbose) << "Creating swapchain with dimensions Width=" << mWidth << " Heigh=" << mHeight << " SampleCount=" << mSamples;
             // First create the swapchain of color buffers.
             swapchainCreateInfo.format = mSwapchainColorFormat;
-            swapchainCreateInfo.sampleCount = mSamples;
+            //if (mRenderToXrSwapchain)
+                swapchainCreateInfo.sampleCount = mSamples;
+            //else
+            //    swapchainCreateInfo.sampleCount = 1;
             swapchainCreateInfo.usageFlags = XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT;
             auto res = xrCreateSwapchain(xr->impl().xrSession(), &swapchainCreateInfo, &mSwapchain);
             if (!XR_SUCCEEDED(res))
@@ -109,15 +113,11 @@ namespace MWVR {
         if (mHaveDepthSwapchain)
         {
             // Now create the swapchain of depth buffers if applicable
-            if (mHaveDepthSwapchain)
-            {
-                swapchainCreateInfo.format = mSwapchainDepthFormat;
-                swapchainCreateInfo.sampleCount = mSamples;
-                swapchainCreateInfo.usageFlags = XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-                auto res = xrCreateSwapchain(xr->impl().xrSession(), &swapchainCreateInfo, &mSwapchainDepth);
-                if (!XR_SUCCEEDED(res))
-                    throw std::runtime_error(XrResultString(res));
-            }
+            swapchainCreateInfo.format = mSwapchainDepthFormat;
+            swapchainCreateInfo.usageFlags = XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+            auto res = xrCreateSwapchain(xr->impl().xrSession(), &swapchainCreateInfo, &mSwapchainDepth);
+            if (!XR_SUCCEEDED(res))
+                throw std::runtime_error(XrResultString(res));
             CHECK_XRCMD(xrEnumerateSwapchainImages(mSwapchainDepth, 0, &imageCount, nullptr));
             mSwapchainDepthBuffers.resize(imageCount, { XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_KHR });
             CHECK_XRCMD(xrEnumerateSwapchainImages(mSwapchainDepth, imageCount, &imageCount, reinterpret_cast<XrSwapchainImageBaseHeader*>(mSwapchainDepthBuffers.data())));
@@ -130,8 +130,17 @@ namespace MWVR {
         {
             uint32_t colorBuffer = mSwapchainColorBuffers[i].image;
             uint32_t depthBuffer = mHaveDepthSwapchain ? mSwapchainDepthBuffers[i].image : 0;
-            mRenderBuffers.emplace_back(new VRFramebuffer(state, mWidth, mHeight, mSamples, colorBuffer, depthBuffer));
+            if (mRenderToXrSwapchain)
+            {
+                mRenderBuffersXr.emplace_back(new VRFramebuffer(state, mWidth, mHeight, mSamples, colorBuffer, depthBuffer, mSwapchainColorFormat, mSwapchainDepthFormat));
+            }
+            if (!mRenderToXrSwapchain)
+            {
+                mRenderBuffersXr.emplace_back(new VRFramebuffer(state, mWidth, mHeight, mSamples, colorBuffer, depthBuffer, mSwapchainColorFormat, mSwapchainDepthFormat));
+                mRenderBuffersGl.emplace_back(new VRFramebuffer(state, mWidth, mHeight, mSamples, 0, 0, mSwapchainColorFormat, mSwapchainDepthFormat));
+            }
         }
+
     }
 
     OpenXRSwapchainImpl::~OpenXRSwapchainImpl()
@@ -143,7 +152,10 @@ namespace MWVR {
     VRFramebuffer* OpenXRSwapchainImpl::renderBuffer() const
     {
         checkAcquired();
-        return mRenderBuffers[mAcquiredImageIndex].get();
+        if (mRenderToXrSwapchain)
+            return mRenderBuffersXr[mAcquiredImageIndex].get();
+        else
+            return mRenderBuffersGl[mAcquiredImageIndex].get();
     }
 
     uint32_t OpenXRSwapchainImpl::acquiredColorTexture() const
@@ -167,16 +179,43 @@ namespace MWVR {
     {
         if (isAcquired())
             throw std::logic_error("Trying to acquire already acquired swapchain");
-        acquire(gc);
+        beginFrameXr(gc);
+        if (!mRenderToXrSwapchain)
+            beginFrameGl(gc);
         renderBuffer()->bindFramebuffer(gc, GL_FRAMEBUFFER_EXT);
     }
-
-    int swapCount = 0;
 
     void OpenXRSwapchainImpl::endFrame(osg::GraphicsContext* gc)
     {
         checkAcquired();
+        //if (!mRenderToXrSwapchain)
+        //    endFrameGl(gc);
+        endFrameXr(gc);
+    }
+
+    void OpenXRSwapchainImpl::beginFrameXr(osg::GraphicsContext* gc)
+    {
+        acquire(gc);
+    }
+
+    void OpenXRSwapchainImpl::endFrameXr(osg::GraphicsContext* gc)
+    {
         release(gc);
+    }
+
+    void OpenXRSwapchainImpl::beginFrameGl(osg::GraphicsContext* gc)
+    {
+        // Nothing to do
+    }
+
+    void OpenXRSwapchainImpl::endFrameGl(osg::GraphicsContext* gc)
+    {
+        // Blit from gl color and depth into xr
+        mRenderBuffersXr[mAcquiredImageIndex]->bindFramebuffer(gc, GL_DRAW_FRAMEBUFFER_EXT);
+        mRenderBuffersGl[mAcquiredImageIndex]->blit(gc, 0, 0, mWidth, mHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+        mRenderBuffersGl[mAcquiredImageIndex]->blit(gc, 0, 0, mWidth, mHeight, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+        mRenderBuffersGl[mAcquiredImageIndex]->bindFramebuffer(gc, GL_FRAMEBUFFER_EXT);
+        glFinish();
     }
 
     void OpenXRSwapchainImpl::acquire(osg::GraphicsContext*)

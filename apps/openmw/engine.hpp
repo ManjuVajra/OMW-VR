@@ -97,7 +97,7 @@ namespace OMW
 
             bool mStereoEnabled;
             bool mStereoOverride;
-            std::unique_ptr<Misc::StereoView> mStereoView;
+            osg::ref_ptr<Misc::StereoView> mStereoView;
 
             bool mSkipMenu;
             bool mUseSound;

@@ -1313,7 +1313,11 @@ namespace MWRender
 
     void RenderingManager::setFogColor(const osg::Vec4f &color)
     {
-        mViewer->getCamera()->setClearColor(color);
+        //mViewer->getCamera()->setClearColor(color);
+        osgViewer::ViewerBase::Cameras cameras;
+        mViewer->getCameras(cameras, false);
+        for (auto* camera : cameras)
+            camera->setClearColor(color);
 
         mStateUpdater->setFogColor(color);
     }

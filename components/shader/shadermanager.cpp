@@ -185,7 +185,7 @@ namespace Shader
     {
         static const char* geometryTemplate =
             "#version 150 compatibility\n"
-            "#extension GL_NV_viewport_array : enable\n"
+            "#extension GL_ARB_viewport_array : enable\n"
             "#extension GL_ARB_gpu_shader5 : enable\n"
             "layout (triangles, invocations = 2) in;\n"
             "layout (triangle_strip, max_vertices = 3) out;\n"

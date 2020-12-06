@@ -143,26 +143,26 @@ namespace SceneUtil {
         class ViewDependentData;
 
         /// Configuration of shadow maps shared by multiple views
-        struct SharedShadowMapConfig : public osg::Referenced
-        {
-            virtual ~SharedShadowMapConfig() {}
+        //struct SharedShadowMapConfig : public osg::Referenced
+        //{
+        //    virtual ~SharedShadowMapConfig() {}
 
-            /// String identifier of the shared shadow map
-            std::string     _id{ "" };
+        //    /// String identifier of the shared shadow map
+        //    std::string     _id{ "" };
 
-            /// If true, this camera will generate the shadow map
-            bool            _master{ false };
+        //    /// If true, this camera will generate the shadow map
+        //    bool            _master{ false };
 
-            /// If set, will override projection matrix of camera when generating shadow map.
-            osg::ref_ptr<osg::RefMatrix> _projection{ nullptr };
+        //    /// If set, will override projection matrix of camera when generating shadow map.
+        //    osg::ref_ptr<osg::RefMatrix> _projection{ nullptr };
 
-            /// If set, will override model view matrix of camera when generating shadow map.
-            osg::ref_ptr<osg::RefMatrix> _modelView{ nullptr };
+        //    /// If set, will override model view matrix of camera when generating shadow map.
+        //    osg::ref_ptr<osg::RefMatrix> _modelView{ nullptr };
 
-            /// Reference frame of the view matrix
-            osg::Transform::ReferenceFrame
-                            _referenceFrame{ osg::Transform::ABSOLUTE_RF };
-        };
+        //    /// Reference frame of the view matrix
+        //    osg::Transform::ReferenceFrame
+        //                    _referenceFrame{ osg::Transform::ABSOLUTE_RF };
+        //};
 
         struct LightData : public osg::Referenced
         {
@@ -240,15 +240,15 @@ namespace SceneUtil {
 
         ViewDependentData* getViewDependentData(osgUtil::CullVisitor* cv);
 
-        ViewDependentData* getSharedVdd(const SharedShadowMapConfig& config);
+        //ViewDependentData* getSharedVdd(const SharedShadowMapConfig& config);
 
-        void addSharedVdd(const SharedShadowMapConfig& config, ViewDependentData* vdd);
+        //void addSharedVdd(const SharedShadowMapConfig& config, ViewDependentData* vdd);
 
-        void shareShadowMap(osgUtil::CullVisitor& cv, ViewDependentData* lhs, ViewDependentData* rhs);
+        //void shareShadowMap(osgUtil::CullVisitor& cv, ViewDependentData* lhs, ViewDependentData* rhs);
 
-        bool trySharedShadowMap(osgUtil::CullVisitor& cv, ViewDependentData* vdd);
+        //bool trySharedShadowMap(osgUtil::CullVisitor& cv, ViewDependentData* vdd);
 
-        void endSharedShadowMap(osgUtil::CullVisitor& cv);
+        //void endSharedShadowMap(osgUtil::CullVisitor& cv);
 
         void castShadows(osgUtil::CullVisitor& cv, ViewDependentData* vdd);
 

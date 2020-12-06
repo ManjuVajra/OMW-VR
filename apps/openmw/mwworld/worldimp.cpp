@@ -2445,7 +2445,7 @@ namespace MWWorld
         if(!mRendering->getCamera()->isVanityOrPreviewModeEnabled())
             return false;
 
-        mRendering->getCamera()->rotateCamera(rot[0], rot[2], true);
+        mRendering->getCamera()->rotateCamera(rot[0], 0, rot[2], true);
         return true;
     }
 
