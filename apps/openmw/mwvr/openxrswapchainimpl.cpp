@@ -237,7 +237,10 @@ namespace MWVR {
             // First create the swapchain of color buffers.
             swapchainCreateInfo.format = mFormat;
             swapchainCreateInfo.sampleCount = mSamples;
-            swapchainCreateInfo.usageFlags = XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT;
+            swapchainCreateInfo.usageFlags =
+                use == Use::COLOR ? XR_SWAPCHAIN_USAGE_SAMPLED_BIT |
+                                        XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT
+                                  : XR_SWAPCHAIN_USAGE_SAMPLED_BIT;
             auto res = xrCreateSwapchain(xr->impl().xrSession(), &swapchainCreateInfo, &mSwapchain);
             if (!XR_SUCCEEDED(res))
             {
