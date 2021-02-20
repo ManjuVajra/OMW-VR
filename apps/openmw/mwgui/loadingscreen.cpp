@@ -145,9 +145,12 @@ namespace MWGui
 
         void operator () (osg::RenderInfo& renderInfo) const override
         {
-            int w = renderInfo.getCurrentCamera()->getViewport()->width();
-            int h = renderInfo.getCurrentCamera()->getViewport()->height();
-            mTexture->copyTexImage2D(*renderInfo.getState(), 0, 0, w, h);
+            if (mOneshot)
+            {
+                int w = renderInfo.getCurrentCamera()->getViewport()->width();
+                int h = renderInfo.getCurrentCamera()->getViewport()->height();
+                mTexture->copyTexImage2D(*renderInfo.getState(), 0, 0, w, h);
+            }
 
             mOneshot = false;
         }
@@ -331,14 +334,13 @@ namespace MWGui
         if (!mCopyFramebufferToTextureCallback)
         {
             mCopyFramebufferToTextureCallback = new CopyFramebufferToTextureCallback(mTexture);
+#if OSG_VERSION_GREATER_OR_EQUAL(3, 5, 10)
+            mViewer->getCamera()->addInitialDrawCallback(mCopyFramebufferToTextureCallback);
+#else
+            mViewer->getCamera()->setInitialDrawCallback(mCopyFramebufferToTextureCallback);
+#endif
         }
 
-#if OSG_VERSION_GREATER_OR_EQUAL(3, 5, 10)
-        mViewer->getCamera()->removeInitialDrawCallback(mCopyFramebufferToTextureCallback);
-        mViewer->getCamera()->addInitialDrawCallback(mCopyFramebufferToTextureCallback);
-#else
-        mViewer->getCamera()->setInitialDrawCallback(mCopyFramebufferToTextureCallback);
-#endif
         mCopyFramebufferToTextureCallback->reset();
 
         mBackgroundImage->setBackgroundImage("");
