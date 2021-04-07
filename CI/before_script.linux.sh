@@ -43,9 +43,24 @@ if [[ "${BUILD_TESTS_ONLY}" ]]; then
         -DBUILD_ESSIMPORTER=OFF \
         -DBUILD_OPENCS=OFF \
         -DBUILD_WIZARD=OFF \
+        -DBUILD_NIFTEST=OFF \
         -DBUILD_UNITTESTS=ON \
         -DGTEST_ROOT="${GOOGLETEST_DIR}" \
         -DGMOCK_ROOT="${GOOGLETEST_DIR}" \
+        ..
+elif [[ "${BUILD_ENGINE_ONLY}" ]]; then
+    ${ANALYZE} cmake \
+        "${CMAKE_CONF_OPTS[@]}" \
+        -DBUILD_OPENMW=ON \
+        -DBUILD_BSATOOL=OFF \
+        -DBUILD_ESMTOOL=OFF \
+        -DBUILD_LAUNCHER=OFF \
+        -DBUILD_MWINIIMPORTER=OFF \
+        -DBUILD_ESSIMPORTER=OFF \
+        -DBUILD_OPENCS=OFF \
+        -DBUILD_WIZARD=OFF \
+        -DBUILD_NIFTEST=OFF \
+        -DBUILD_UNITTESTS=OFF \
         ..
 else
     ${ANALYZE} cmake \

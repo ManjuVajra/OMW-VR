@@ -22,23 +22,67 @@ addons:
     ]
 matrix:
   include:
-    - name: OpenMW (all) on MacOS 10.15 with Xcode 11.6
+    - stage: test
+      name: OpenMW (tests only) on MacOS 10.15 with Xcode 11.6
       os: osx
       osx_image: xcode11.6
-    - name: OpenMW (all) on Ubuntu Focal with GCC
-      os: linux
-      dist: focal
-    - name: OpenMW (tests only) on Ubuntu Focal with GCC
+      env:
+        BUILD_TESTS_ONLY: 1
+        RUN_TESTS: 1
+    - stage: test
+      name: OpenMW (tests only) on Ubuntu Focal with GCC
       os: linux
       dist: focal
       env:
-        - BUILD_TESTS_ONLY: 1
-    - name: OpenMW (openmw) on Ubuntu Focal with Clang's Static Analysis
+        BUILD_TESTS_ONLY: 1
+        RUN_TESTS: 1
+    - stage: test
+      name: OpenMW (tests only) on Ubuntu Focal with Clang's Static Analysis
       os: linux
       dist: focal
       env:
-        - MATRIX_EVAL="CC=clang-9 && CXX=clang++-9"
-        - ANALYZE="scan-build --force-analyze-debug-code --use-cc clang-9 --use-c++ clang++-9"
+        MATRIX_EVAL: "CC=clang-9 && CXX=clang++-9"
+        ANALYZE: "scan-build --force-analyze-debug-code --use-cc clang-9 --use-c++ clang++-9"
+        BUILD_TESTS_ONLY: 1
+      compiler: clang
+    - stage: engine
+      name: OpenMW (engine) on MacOS 10.15 with Xcode 11.6
+      os: osx
+      osx_image: xcode11.6
+      env:
+        BUILD_ENGINE_ONLY: 1
+    - stage: engine
+      name: OpenMW (engine) on Ubuntu Focal with GCC
+      os: linux
+      dist: focal
+      env:
+        BUILD_ENGINE_ONLY: 1
+    - stage: engine
+      name: OpenMW (engine) on Ubuntu Focal with Clang's Static Analysis
+      os: linux
+      dist: focal
+      env:
+        MATRIX_EVAL: "CC=clang-9 && CXX=clang++-9"
+        ANALYZE: "scan-build --force-analyze-debug-code --use-cc clang-9 --use-c++ clang++-9"
+        BUILD_ENGINE_ONLY: 1
+      compiler: clang
+    - stage: all
+      name: OpenMW (all) on MacOS 10.15 with Xcode 11.6
+      os: osx
+      osx_image: xcode11.6
+      env:
+        BUILD_PACKAGE: 1
+    - stage: all
+      name: OpenMW (all) on Ubuntu Focal with GCC
+      os: linux
+      dist: focal
+    - stage: all
+      name: OpenMW (all) on Ubuntu Focal with Clang's Static Analysis
+      os: linux
+      dist: focal
+      env:
+        MATRIX_EVAL: "CC=clang-9 && CXX=clang++-9"
+        ANALYZE: "scan-build --force-analyze-debug-code --use-cc clang-9 --use-c++ clang++-9"
       compiler: clang
 
 before_install:
@@ -50,9 +94,9 @@ before_script:
 script:
  - cd ./build
  - ${ANALYZE} make -j3;
- - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then make package; fi
- - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then ../CI/check_package.osx.sh; fi
- - if [ "${TRAVIS_OS_NAME}" = "linux" ] && [ "${BUILD_TESTS_ONLY}" ]; then ./openmw_test_suite; fi
+ - if [ "${TRAVIS_OS_NAME}" = "osx" ] && [ "${BUILD_PACKAGE}" ]; then make package; fi
+ - if [ "${TRAVIS_OS_NAME}" = "osx" ] && [ "${BUILD_PACKAGE}" ]; then ../CI/check_package.osx.sh; fi
+ - if [ "${RUN_TESTS}" ]; then ./openmw_test_suite; fi
  - if [ "${TRAVIS_OS_NAME}" = "linux" ]; then cd .. && ./CI/check_tabs.sh; fi
  - cd "${TRAVIS_BUILD_DIR}"
  - ccache -s
