@@ -1,8 +1,8 @@
 language: cpp
-branches:
-  only:
-    - master
-    - /openmw-.*$/
+# branches:
+#   only:
+#     - master
+#     - /openmw-.*$/
 cache: ccache
 addons:
   apt:
