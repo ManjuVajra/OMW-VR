@@ -19,6 +19,8 @@ stages:
   rules:
     - if: '$CI_PIPELINE_SOURCE != "schedule"'
   script:
+    - echo "CI_JOB_NAME=${CI_JOB_NAME}"
+    - echo "CI_PIPELINE_SOURCE=${CI_PIPELINE_SOURCE}"
     - export CCACHE_BASEDIR="`pwd`"
     - export CCACHE_DIR="`pwd`/ccache" && mkdir -pv "$CCACHE_DIR"
     - ccache -z -M "${CCACHE_SIZE}"
@@ -38,6 +40,8 @@ Coverity:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
   before_script:
+    - echo "CI_JOB_NAME=${CI_JOB_NAME}"
+    - echo "CI_PIPELINE_SOURCE=${CI_PIPELINE_SOURCE}"
     - CI/install_debian_deps.sh gcc openmw-deps openmw-deps-dynamic coverity
     - curl -o /tmp/cov-analysis-linux64.tgz https://scan.coverity.com/download/linux64 --form project=$COVERITY_SCAN_PROJECT_NAME --form token=$COVERITY_SCAN_TOKEN
     - tar xfz /tmp/cov-analysis-linux64.tgz
@@ -61,6 +65,8 @@ Debian_GCC:
   cache:
     key: Debian_GCC.v2
   before_script:
+    - echo "CI_JOB_NAME=${CI_JOB_NAME}"
+    - echo "CI_PIPELINE_SOURCE=${CI_PIPELINE_SOURCE}"
     - CI/install_debian_deps.sh gcc openmw-deps openmw-deps-dynamic
   variables:
     CC: gcc
@@ -174,7 +180,12 @@ variables: &cs-targets
 .Windows_Ninja_Base:
   tags:
     - windows
+  stage: build
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "schedule"'
   before_script:
+  - echo "CI_JOB_NAME=${CI_JOB_NAME}"
+  - echo "CI_PIPELINE_SOURCE=${CI_PIPELINE_SOURCE}"
   - Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
   - choco source add -n=openmw-proxy -s="https://repo.openmw.org/repository/Chocolatey/" --priority=1
   - choco install git --force --params "/GitAndUnixToolsOnPath" -y
@@ -184,9 +195,6 @@ variables: &cs-targets
   - choco install ninja -y
   - choco install python -y
   - refreshenv
-  stage: build
-  rules:
-    - if: '$CI_PIPELINE_SOURCE != "schedule"'
   script:
     - $time = (Get-Date -Format "HH:mm:ss")
     - echo ${time}
@@ -269,7 +277,12 @@ Windows_Ninja_CS_RelWithDebInfo:
 .Windows_MSBuild_Base:
   tags:
     - windows
+  stage: build
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "schedule"'
   before_script:
+  - echo "CI_JOB_NAME=${CI_JOB_NAME}"
+  - echo "CI_PIPELINE_SOURCE=${CI_PIPELINE_SOURCE}"
   - Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
   - choco source add -n=openmw-proxy -s="https://repo.openmw.org/repository/Chocolatey/" --priority=1
   - choco install git --force --params "/GitAndUnixToolsOnPath" -y
@@ -278,9 +291,6 @@ Windows_Ninja_CS_RelWithDebInfo:
   - choco install vswhere -y
   - choco install python -y
   - refreshenv
-  stage: build
-  rules:
-    - if: '$CI_PIPELINE_SOURCE != "schedule"'
   script:
     - $time = (Get-Date -Format "HH:mm:ss")
     - echo ${time}
@@ -365,6 +375,7 @@ Debian_AndroidNDK_arm64-v8a:
   image: debian:bullseye
   variables:
     CCACHE_SIZE: 3G
+  stage: build
   cache:
     key: Debian_AndroidNDK_arm64-v8a.v3
     paths:
@@ -377,7 +388,6 @@ Debian_AndroidNDK_arm64-v8a:
     - echo "google-android-ndk-installer google-android-installers/mirror select https://dl.google.com" | debconf-set-selections
     - apt-get update -yq
     - apt-get -q -o dir::cache::archives="$APT_CACHE_DIR" install -y cmake ccache curl unzip git build-essential google-android-ndk-installer
-  stage: build
   script:
     - export CCACHE_BASEDIR="`pwd`"
     - export CCACHE_DIR="`pwd`/ccache" && mkdir -pv "$CCACHE_DIR"
