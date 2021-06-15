@@ -356,8 +356,8 @@ endif()
 
 if(OPENMW_USE_SYSTEM_OSG)
     find_package(OpenSceneGraph 3.3.4 REQUIRED ${USED_OSG_COMPONENTS})
-    if (${OPENSCENEGRAPH_VERSION} VERSION_GREATER_EQUAL 3.6.0 AND ${OPENSCENEGRAPH_VERSION} VERSION_LESS 3.6.5)
-        message(FATAL_ERROR "OpenSceneGraph version ${OPENSCENEGRAPH_VERSION} is broken, use 3.6.5 or greater.")
+    if (${OPENSCENEGRAPH_VERSION} VERSION_GREATER 3.6.2 AND ${OPENSCENEGRAPH_VERSION} VERSION_LESS 3.6.5)
+        message(FATAL_ERROR "OpenSceneGraph version ${OPENSCENEGRAPH_VERSION} has critical regressions which cause crashes, please upgrade to 3.6.5")
     endif()
 
     if(OSG_STATIC)
