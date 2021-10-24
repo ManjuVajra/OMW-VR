@@ -3,6 +3,7 @@
 #include <fstream>
 #include <algorithm>
 #include <sstream>
+#include <regex>
 
 #include <osg/Program>
 
@@ -319,6 +320,15 @@ namespace Shader
         if (shaderIt == mShaders.end())
         {
             std::string shaderSource = templateIt->second;
+
+            if (defines.count("useOVR_multiview") > 0 && defines.find("useOVR_multiview")->second == "1")
+            {
+                enableOvrMultiview2(shaderSource, shaderType);
+                int fileNumber = 1;
+                if (!parseIncludes(boost::filesystem::path(mPath), shaderSource, templateName, fileNumber, {}))
+                    return nullptr;
+            }
+
             if (!parseDefines(shaderSource, defines, mGlobalDefines, templateName) || !parseFors(shaderSource, templateName))
             {
                 // Add to the cache anyway to avoid logging the same error over and over.
@@ -372,6 +382,15 @@ namespace Shader
                 // I'm not sure how to handle a shader that was already broken as there's no way to get a potential replacement to the nodes that need it.
                 continue;
             std::string shaderSource = mShaderTemplates[templateId];
+
+            if (defines.count("useOVR_multiview") > 0 && defines.find("useOVR_multiview")->second == "1")
+            {
+                enableOvrMultiview2(shaderSource, shader->getType());
+                int fileNumber = 1;
+                if (!parseIncludes(boost::filesystem::path(mPath), shaderSource, templateId, fileNumber, {}))
+                    continue;
+            }
+
             if (!parseDefines(shaderSource, defines, mGlobalDefines, templateId) || !parseFors(shaderSource, templateId))
                 // We just broke the shader and there's no way to force existing objects back to fixed-function mode as we would when creating the shader.
                 // If we put a nullptr in the shader map, we just lose the ability to put a working one in later.
@@ -390,6 +409,42 @@ namespace Shader
         }
         for (auto program : mPrograms)
             program.second->releaseGLObjects(state);
+    }
+
+    void ShaderManager::enableOvrMultiview2(std::string& source, osg::Shader::Type shaderType)
+    {
+        std::regex versionRegex("^[ \\t]*#[ \\t]*version[ \\t]+(\\d+)([ \\t]+([a-zA-Z0-9_]+))?");
+        std::smatch match;
+
+        bool haveVersion = false;
+        int version = 0;
+        bool haveProfile = false;
+        std::string profile = "";
+        std::string matchedVersionString = "";
+
+        if (std::regex_search(source, match, versionRegex))
+        {
+            matchedVersionString = match[0].str();
+            if (match.size() >= 2)
+            {
+                haveVersion = true;
+                version = std::atoi(match[1].str().c_str());
+            }
+            if (match.size() >= 4)
+            {
+                profile = match[3].str();
+                haveProfile = !profile.empty();
+            }
+        }
+
+        std::string newVersionString = matchedVersionString;
+        if (version < 330)
+        {
+            // Version too low for ovr multiview. Bump it to 330 compatibility
+            newVersionString = "#version 330 compatibility";
+        }
+
+        source = std::regex_replace(source, versionRegex, newVersionString + "\n");
     }
 
 }

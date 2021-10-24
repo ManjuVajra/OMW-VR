@@ -49,6 +49,8 @@ namespace Shader
         void releaseGLObjects(osg::State* state);
 
     private:
+        void enableOvrMultiview2(std::string& source, osg::Shader::Type shaderType);
+
         std::string mPath;
 
         DefineMap mGlobalDefines;
