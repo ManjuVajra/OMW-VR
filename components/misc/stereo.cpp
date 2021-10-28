@@ -202,8 +202,6 @@ namespace Misc
         StereoView* stereoView;
     };
 
-
-
     // Update states during cull
     class BruteForceStereoStatesetUpdateCallback : public SceneUtil::StateSetUpdater
     {
@@ -540,12 +538,6 @@ namespace Misc
 
         if (mTechnique == Technique::BruteForce)
         {
-            // TODO: Still needed anytime?
-            //auto width = mMainCamera->getViewport()->width();
-            //auto height = mMainCamera->getViewport()->height();
-            //mLeftCamera->setViewport(0, 0, width / 2, height);
-            //mRightCamera->setViewport(width / 2, 0, width / 2, height);
-
             if (mMasterConfig->_projection == nullptr)
                 mMasterConfig->_projection = new osg::RefMatrix;
             if (mMasterConfig->_modelView == nullptr)

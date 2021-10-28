@@ -877,10 +877,8 @@ void OMW::Engine::prepareEngine (Settings::Manager & settings)
 
     if (mStereoEnabled)
     {
-        // Set up stereo
-        // Stereo setup is split in two because the shader-based approaches cannot be used before the RenderingManager has been created.
-        // To be able to see the logo and initial loading screen the BruteForce technique must be set up here.
-        mStereoView->initializeStereo(mViewer, Misc::StereoView::Technique::BruteForce);
+
+        mStereoView->initializeStereo(mViewer);
     }
 
 #ifdef USE_OPENXR
@@ -889,7 +887,9 @@ void OMW::Engine::prepareEngine (Settings::Manager & settings)
     auto cullMask = ~(MWRender::VisMask::Mask_UpdateVisitor | MWRender::VisMask::Mask_SimpleWater);
     cullMask &= ~MWRender::VisMask::Mask_GUI;
     cullMask |= MWRender::VisMask::Mask_3DGUI;
-    mStereoView->setCullMask(cullMask);
+    mViewer->getCamera()->setCullMask(cullMask);
+    mViewer->getCamera()->setCullMaskLeft(cullMask);
+    mViewer->getCamera()->setCullMaskRight(cullMask);
 #endif
 
     
@@ -919,15 +919,13 @@ void OMW::Engine::prepareEngine (Settings::Manager & settings)
     camera->setShouldTrackPlayerCharacter(true);
 #endif
 
+    // TODO: Move this to wherever Mask_GUI is being re-enabled.
     if (mStereoEnabled)
     {
-        // Stereo shader technique can be set up now.
-        mStereoView->setStereoTechnique(Misc::getStereoTechnique());
-        mStereoView->initializeScene();
-
-        // TODO: What do
-        //if (mEnvironment.getVrMode())
-            //mStereoView->setCullMask(mStereoView->getCullMask() & ~MWRender::VisMask::Mask_GUI);
+        if (mEnvironment.getVrMode())
+        {
+            mViewer->getCamera()->setCullMask(mViewer->getCamera()->getCullMask() & ~(MWRender::VisMask::Mask_GUI));
+        }
     }
 
     window->setStore(mEnvironment.getWorld()->getStore());
@@ -1089,17 +1087,9 @@ void OMW::Engine::go()
     mEnvironment.setVrMode(true);
 #endif
 
-    // geometry shader must be enabled before the RenderingManager sets up any shaders
-    // therefore this part is separate from the rest of stereo setup.
     mStereoEnabled = mEnvironment.getVrMode() || Settings::Manager::getBool("stereo enabled", "Stereo");
-    if (mStereoEnabled)
-    {
-        // Mask in everything that does not currently use shaders.
-        // Remove that altogether when the sky finally uses them.
-        auto noShaderMask = MWRender::VisMask::Mask_Sky | MWRender::VisMask::Mask_Sun | MWRender::VisMask::Mask_WeatherParticles;
-        // Since shaders are not yet created, we need to use the brute force technique initially
-        mStereoView.reset(new Misc::StereoView(noShaderMask, MWRender::VisMask::Mask_Scene));
-    }
+    // Instantiate the stereo view singleton before anything tries to use it
+    mStereoView.reset(new Misc::StereoView);
 
     // Setup viewer
     mViewer = new osgViewer::Viewer;
