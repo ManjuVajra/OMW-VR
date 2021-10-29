@@ -364,6 +364,7 @@ namespace Misc
 
         if (mTechnique == Technique::OVR_MultiView2)
         {
+            defines["GLSLVersion"] = "330 compatibility";
             defines["useOVR_multiview"] = "1";
             defines["numViews"] = "2";
         }

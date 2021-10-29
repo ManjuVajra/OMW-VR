@@ -7,7 +7,7 @@
 // REQUIREMENT:
 // GLSL version: 330 or greater
 // GLSL profile: compatibility
-// NOTE: If "useOVR_multiview" == "1", the shadermanager will automatically promote lower versions to version 330 compatibility
+// NOTE: If stereo is enabled using Misc::StereoView::shaderStereoDefines, version 330 compatibility (or greater) will be set.
 
 // USAGE:
 // Use the mw_stereoAwareSampler2D sampler and mw_stereoAwareTexture2D method to sample stereo aware RTT textures.

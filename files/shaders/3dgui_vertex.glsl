@@ -1,4 +1,4 @@
-#version 130
+#version @GLSLVersion
 
 #include "multiview_vertex.glsl"
 

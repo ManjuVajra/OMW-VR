@@ -7,7 +7,7 @@
 // REQUIREMENT:
 // GLSL version: 330 or greater
 // GLSL profile: compatibility
-// NOTE: If "useOVR_multiview" == "1", the shadermanager will automatically promote lower versions to version 330 compatibility
+// NOTE: If stereo is enabled using Misc::StereoView::shaderStereoDefines, version 330 compatibility (or greater) will be set.
 
 // USAGE:
 // To create a stereo-aware vertex shader, use the matrix accessor functions defined in this .glsl file to compute gl_Position.

@@ -33,7 +33,7 @@ namespace Shader
         /// @note Thread safe.
         osg::ref_ptr<osg::Shader> getShader(const std::string& templateName, const DefineMap& defines, osg::Shader::Type shaderType);
 
-        osg::ref_ptr<osg::Program> getProgram(osg::ref_ptr<osg::Shader> vertexShader, osg::ref_ptr<osg::Shader> fragmentShader, const osg::Program* programTemplate=nullptr);
+        osg::ref_ptr<osg::Program> getProgram(osg::ref_ptr<osg::Shader> vertexShader, osg::ref_ptr<osg::Shader> fragmentShader, const osg::Program* programTemplate = nullptr);
 
         const osg::Program* getProgramTemplate() const { return mProgramTemplate; }
         void setProgramTemplate(const osg::Program* program) { mProgramTemplate = program; }
@@ -49,8 +49,6 @@ namespace Shader
         void releaseGLObjects(osg::State* state);
 
     private:
-        void enableOvrMultiview2(std::string& source, osg::Shader::Type shaderType);
-
         std::string mPath;
 
         DefineMap mGlobalDefines;

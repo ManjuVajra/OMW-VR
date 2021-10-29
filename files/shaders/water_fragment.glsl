@@ -1,4 +1,4 @@
-#version 120
+#version @GLSLVersion
 
 #include "multiview_fragment.glsl"
 
