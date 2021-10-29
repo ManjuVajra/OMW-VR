@@ -9,7 +9,7 @@ set(DDIRRELATIVE resources/shaders)
 set(SHADER_FILES
     3dgui_vertex.glsl
     3dgui_fragment.glsl
-	groundcover_vertex.glsl
+    groundcover_vertex.glsl
     groundcover_fragment.glsl
     water_vertex.glsl
     water_fragment.glsl
