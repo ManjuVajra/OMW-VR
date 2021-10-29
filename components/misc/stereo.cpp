@@ -322,7 +322,12 @@ namespace Misc
         auto stereoMethodStringLowerCase = Misc::StringUtils::lowerCase(stereoMethodString);
         if (stereoMethodStringLowerCase == "ovr_multiview2")
         {
+#ifdef OSG_HAS_MULTIVIEW
             return Misc::StereoView::Technique::OVR_MultiView2;
+#else
+            Log(Debug::Warning) << "Stereo method setting is \"" << stereoMethodString << "\" but OSG does not support multiview, defaulting to BruteForce";
+            return Misc::StereoView::Technique::BruteForce;
+#endif
         }
         if (stereoMethodStringLowerCase == "bruteforce")
         {
@@ -622,7 +627,9 @@ namespace Misc
     void StereoFramebuffer::attachColorComponent(GLint internalFormat)
     {
         mColorTextureArray = createTextureArray(internalFormat);
+#ifdef OSG_HAS_MULTIVIEW
         mLayeredFbo->setAttachment(osg::Camera::COLOR_BUFFER, osg::FrameBufferAttachment(mColorTextureArray, osg::Camera::FACE_CONTROLLED_BY_MULTIVIEW_SHADER, 0));
+#endif
         mUnlayeredFbo[0]->setAttachment(osg::Camera::COLOR_BUFFER, osg::FrameBufferAttachment(mColorTextureArray, 0, 0));
         mUnlayeredFbo[1]->setAttachment(osg::Camera::COLOR_BUFFER, osg::FrameBufferAttachment(mColorTextureArray, 1, 0));
     }
@@ -630,7 +637,9 @@ namespace Misc
     void StereoFramebuffer::attachDepthComponent(GLint internalFormat)
     {
         mDepthTextureArray = createTextureArray(internalFormat);
+#ifdef OSG_HAS_MULTIVIEW
         mLayeredFbo->setAttachment(osg::Camera::DEPTH_BUFFER, osg::FrameBufferAttachment(mDepthTextureArray, osg::Camera::FACE_CONTROLLED_BY_MULTIVIEW_SHADER, 0));
+#endif
         mUnlayeredFbo[0]->setAttachment(osg::Camera::DEPTH_BUFFER, osg::FrameBufferAttachment(mDepthTextureArray, 0, 0));
         mUnlayeredFbo[1]->setAttachment(osg::Camera::DEPTH_BUFFER, osg::FrameBufferAttachment(mDepthTextureArray, 1, 0));
     }
@@ -653,9 +662,11 @@ namespace Misc
             unsigned int level = 0;
             switch (attachment)
             {
+#ifdef OSG_HAS_MULTIVIEW
             case Attachment::Layered:
                 level = osg::Camera::FACE_CONTROLLED_BY_MULTIVIEW_SHADER;
                 break;
+#endif
             case Attachment::Left:
                 level = 0;
                 break;

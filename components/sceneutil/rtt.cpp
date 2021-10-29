@@ -129,14 +129,19 @@ namespace SceneUtil
                 if (camera->getBufferAttachmentMap().count(osg::Camera::COLOR_BUFFER) == 0)
                 {
                     auto colorBuffer = createTextureArray(GL_RGB);
+#ifdef OSG_HAS_MULTIVIEW
                     camera->attach(osg::Camera::COLOR_BUFFER, colorBuffer, 0, osg::Camera::FACE_CONTROLLED_BY_MULTIVIEW_SHADER);
+#endif
                     //SceneUtil::attachAlphaToCoverageFriendlyFramebufferToCamera(camera, osg::Camera::COLOR_BUFFER, colorBuffer);
                 }
 
                 if (camera->getBufferAttachmentMap().count(osg::Camera::DEPTH_BUFFER) == 0)
                 {
                     auto depthBuffer = createTextureArray(GL_DEPTH_COMPONENT);
+
+#ifdef OSG_HAS_MULTIVIEW
                     camera->attach(osg::Camera::DEPTH_BUFFER, depthBuffer, 0, osg::Camera::FACE_CONTROLLED_BY_MULTIVIEW_SHADER);
+#endif
                 }
             }
             else
