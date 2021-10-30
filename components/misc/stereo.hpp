@@ -54,8 +54,8 @@ namespace Misc
         int mWidth;
         int mHeight;
         int mSamples;
-        std::array<osg::ref_ptr<osg::FrameBufferObject>, 2> mUnlayeredFbo;
         osg::ref_ptr<osg::FrameBufferObject> mLayeredFbo;
+        std::array<osg::ref_ptr<osg::FrameBufferObject>, 2> mUnlayeredFbo;
         osg::ref_ptr<osg::Texture2DArray> mColorTextureArray;
         osg::ref_ptr<osg::Texture2DArray> mDepthTextureArray;
     };

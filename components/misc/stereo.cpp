@@ -273,22 +273,6 @@ namespace Misc
         return *sInstance;
     }
 
-    static osg::Camera*
-        createCamera(std::string name, GLbitfield clearMask, osg::Camera::RenderOrder renderOrder)
-    {
-        auto* camera = new osg::Camera;
-
-        camera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
-        camera->setProjectionResizePolicy(osg::Camera::FIXED);
-        camera->setProjectionMatrix(osg::Matrix::identity());
-        camera->setViewMatrix(osg::Matrix::identity());
-        camera->setName(name);
-        camera->setDataVariance(osg::Object::STATIC);
-        camera->setRenderOrder(renderOrder);
-        camera->setClearMask(clearMask);
-        return camera;
-    }
-
     StereoView::StereoView()
         : mViewer(nullptr)
         , mMainCamera(nullptr)
@@ -672,6 +656,8 @@ namespace Misc
                 break;
             case Attachment::Right:
                 level = 1;
+                break;
+            default:
                 break;
             }
 

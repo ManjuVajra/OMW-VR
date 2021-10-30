@@ -462,7 +462,7 @@ namespace VR
             mGammaResolveFramebuffer->apply(*state, osg::FrameBufferObject::READ_FRAMEBUFFER);
             for (auto viewId : mMirrorTextureViews)
             {
-                if(viewId == i)
+                if(viewId == static_cast<unsigned int>(i))
                     gl->glBlitFramebuffer(0, 0, mFramebufferWidth, mFramebufferHeight, dstX, 0, dstX + dstWidth, screenHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
                 dstX += dstWidth;
             }
