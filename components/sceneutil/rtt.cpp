@@ -123,15 +123,14 @@ namespace SceneUtil
 
             setDefaults(mViewDependentDataMap[cv]->mCamera.get());
 
+#ifdef OSG_HAS_MULTIVIEW
             if (shouldDoTextureArray())
             {
                 // Create any buffer attachments not added in setDefaults
                 if (camera->getBufferAttachmentMap().count(osg::Camera::COLOR_BUFFER) == 0)
                 {
                     auto colorBuffer = createTextureArray(GL_RGB);
-#ifdef OSG_HAS_MULTIVIEW
                     camera->attach(osg::Camera::COLOR_BUFFER, colorBuffer, 0, osg::Camera::FACE_CONTROLLED_BY_MULTIVIEW_SHADER);
-#endif
                     //SceneUtil::attachAlphaToCoverageFriendlyFramebufferToCamera(camera, osg::Camera::COLOR_BUFFER, colorBuffer);
                 }
 
@@ -139,12 +138,11 @@ namespace SceneUtil
                 {
                     auto depthBuffer = createTextureArray(GL_DEPTH_COMPONENT);
 
-#ifdef OSG_HAS_MULTIVIEW
                     camera->attach(osg::Camera::DEPTH_BUFFER, depthBuffer, 0, osg::Camera::FACE_CONTROLLED_BY_MULTIVIEW_SHADER);
-#endif
                 }
             }
             else
+#endif
             {
                 // Create any buffer attachments not added in setDefaults
                 if (camera->getBufferAttachmentMap().count(osg::Camera::COLOR_BUFFER) == 0)
