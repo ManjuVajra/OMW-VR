@@ -643,7 +643,7 @@ namespace MWVR
 
 
 
-        Shader::ShaderManager::DefineMap defineMap;
+        Shader::ShaderManager::DefineMap defineMap{ {"GLSLVersion", "120"} };
         Misc::StereoView::instance().shaderStereoDefines(defineMap);
         auto& shaderManager = mResourceSystem->getSceneManager()->getShaderManager();
 
