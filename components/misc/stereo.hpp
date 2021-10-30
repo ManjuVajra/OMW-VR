@@ -163,7 +163,10 @@ namespace Misc
 
         void setStereoFramebuffer(std::shared_ptr<StereoFramebuffer> fbo);
 
+        const std::string& error() const;
+
     private:
+        Technique stereoTechniqueFromSettings(void);
         void setupBruteForceTechnique();
         void setupOVRMultiView2Technique();
         void setupSharedShadows();
@@ -174,6 +177,7 @@ namespace Misc
         osg::ref_ptr<osg::Group>        mStereoRoot;
         osg::ref_ptr<osg::Callback>     mUpdateCallback;
         Technique                       mTechnique;
+        std::string                     mError;
 
         // Stereo matrices
         osg::Matrix                 mLeftViewMatrix;

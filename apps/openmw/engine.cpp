@@ -919,15 +919,6 @@ void OMW::Engine::prepareEngine (Settings::Manager & settings)
     camera->setShouldTrackPlayerCharacter(true);
 #endif
 
-    // TODO: Move this to wherever Mask_GUI is being re-enabled.
-    if (mStereoEnabled)
-    {
-        if (mEnvironment.getVrMode())
-        {
-            mViewer->getCamera()->setCullMask(mViewer->getCamera()->getCullMask() & ~(MWRender::VisMask::Mask_GUI));
-        }
-    }
-
     window->setStore(mEnvironment.getWorld()->getStore());
     window->initUI();
 
@@ -1126,6 +1117,20 @@ void OMW::Engine::go()
 
     if (stats.is_open())
         Resource::CollectStatistics(mViewer);
+
+    // TODO: Move this to wherever Mask_GUI is being re-enabled.
+    if (mStereoEnabled)
+    {
+        if (mEnvironment.getVrMode())
+        {
+            mViewer->getCamera()->setCullMask(mViewer->getCamera()->getCullMask() & ~(MWRender::VisMask::Mask_GUI));
+        }
+
+        if (!mStereoView->error().empty())
+        {
+            mEnvironment.getWindowManager()->messageBox(mStereoView->error());
+        }
+    }
 
     // Start the game
     if (!mSaveGameFile.empty())

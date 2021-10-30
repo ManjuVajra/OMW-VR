@@ -300,16 +300,22 @@ namespace Misc
 
     }
 
-    StereoView::Technique stereoTechniqueFromSettings(void)
+    StereoView::Technique StereoView::stereoTechniqueFromSettings(void)
     {
+
         auto stereoMethodString = Settings::Manager::getString("stereo method", "Stereo");
         auto stereoMethodStringLowerCase = Misc::StringUtils::lowerCase(stereoMethodString);
         if (stereoMethodStringLowerCase == "ovr_multiview2")
         {
 #ifdef OSG_HAS_MULTIVIEW
-            return Misc::StereoView::Technique::OVR_MultiView2;
+            osg::ref_ptr<osg::GLExtensions> exts = osg::GLExtensions::Get(0, false);
+            if(exts->glFramebufferTextureMultiviewOVR)
+                return Misc::StereoView::Technique::OVR_MultiView2;
+
+            mError = std::string("Stereo method setting is \"") + stereoMethodString + "\" but current GPU or driver does not support multiview, defaulting to BruteForce";
+            return Misc::StereoView::Technique::BruteForce;
 #else
-            Log(Debug::Warning) << "Stereo method setting is \"" << stereoMethodString << "\" but OSG does not support multiview, defaulting to BruteForce";
+            mError = std::string("Stereo method setting is \"") + stereoMethodString + "\" but this version of OpenSceneGraph does not support multiview, defaulting to BruteForce";
             return Misc::StereoView::Technique::BruteForce;
 #endif
         }
@@ -362,6 +368,11 @@ namespace Misc
     void StereoView::setStereoFramebuffer(std::shared_ptr<StereoFramebuffer> fbo)
     {
         mStereoFramebuffer = fbo;
+    }
+
+    const std::string& StereoView::error() const
+    {
+        return mError;
     }
 
     void StereoView::setupBruteForceTechnique()
