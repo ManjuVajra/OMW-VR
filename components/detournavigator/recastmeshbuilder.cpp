@@ -19,6 +19,7 @@
 #include <array>
 #include <vector>
 #include <sstream>
+
 namespace DetourNavigator
 {
     using BulletHelpers::makeProcessTriangleCallback;
