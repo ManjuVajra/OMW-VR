@@ -708,7 +708,7 @@ if (WIN32)
   #set_target_properties(openmw PROPERTIES LINK_FLAGS_MINSIZEREL "/SUBSYSTEM:WINDOWS")
 endif()
 
-if (BUILD_OPENMW AND APPLE)
+if (BUILD_OPENMW AND APPLE AND USE_LUAGIT)
     # Without these flags LuaJit crashes on startup on OSX
     set_target_properties(openmw PROPERTIES LINK_FLAGS "-pagezero_size 10000 -image_base 100000000")
     target_compile_definitions(components PRIVATE GL_SILENCE_DEPRECATION=1)
