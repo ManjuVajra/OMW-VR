@@ -11,7 +11,7 @@ namespace Files
 {
     std::uint64_t getHash(const std::string& fileName, std::istream& stream)
     {
-        std::size_t hash = std::hash<std::string> {}(fileName);
+        std::uint64_t hash = std::hash<std::string> {}(fileName);
         try
         {
             const auto start = stream.tellg();
